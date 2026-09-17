@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  my-app1:
+    image: rishiihere/dynpage:latest
+    container_name: my-app1
+    environment:
+      - APP_NAME=APP1
+      - BG_COLOR=blue
+    networks:
+      - traefik-public
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/page1')"]
+      interval: 3s
+      timeout: 2s
+      retries: 3
+      start_period: 2s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.dynpage-service.loadbalancer.server.port=8000"
+      - "traefik.http.routers.dynpage-public.rule=Host(`dynpage.localhost`)"
+      - "traefik.http.routers.dynpage-public.service=dynpage-service"
+      - "traefik.http.routers.dynpage-admin.rule=Host(`dynpage.localhost`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.dynpage-admin.service=dynpage-service"
+      - "traefik.http.routers.dynpage-admin.middlewares=block-admin"
+      - "traefik.http.middlewares.block-admin.ipallowlist.sourcerange=127.255.255.255/32"
+
+  my-app2:
+    image: rishiihere/dynpage:latest
+    container_name: my-app2
+    environment:
+      - APP_NAME=APP2
+      - BG_COLOR=darkorange
+    networks:
+      - traefik-public
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/page1')"]
+      interval: 3s
+      timeout: 2s
+      retries: 3
+      start_period: 2s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.dynpage-service.loadbalancer.server.port=8000"
+      - "traefik.http.routers.dynpage-public.rule=Host(`dynpage.localhost`)"
+      - "traefik.http.routers.dynpage-public.service=dynpage-service"
+      - "traefik.http.routers.dynpage-admin.rule=Host(`dynpage.localhost`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.dynpage-admin.service=dynpage-service"
+      - "traefik.http.routers.dynpage-admin.middlewares=block-admin"
+
+networks:
+  traefik-public:
+    external: true
+
